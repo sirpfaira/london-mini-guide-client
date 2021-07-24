@@ -1,1 +1,0 @@
-# london-mini-guide-client
