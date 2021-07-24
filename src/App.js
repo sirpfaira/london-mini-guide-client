@@ -2,6 +2,7 @@ import './App.css';
 import React, { useState } from 'react';
 import Loader from 'react-loader-spinner';
 //if the react app is not starting type in terminal "npm install react-loader-spinner --save"
+//Live demo - https://cyf-sirpfaira-london-mini-guide.netlify.app/
 
 function App() {
   const [city, setCity] = useState('');
@@ -18,20 +19,24 @@ function App() {
     } else {
       setLoading(true);
       let clickedTab = e.target.value;
-      setCategory(clickedTab);
-      console.log(`${city}/${category}`);
 
-      fetch(`https://london-mini-guide.glitch.me/${city}/${category}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setLoading(false);
-          setInfo([...data]);
-        })
-        .catch((error) => {
-          setLoading(false);
-          setError(true);
-          console.log(error);
-        });
+      if (clickedTab) {
+        console.log(clickedTab);
+        setCategory(clickedTab);
+        console.log(`${city}/${clickedTab}`);
+
+        fetch(`https://london-mini-guide.glitch.me/${city}/${clickedTab}`)
+          .then((res) => res.json())
+          .then((data) => {
+            setLoading(false);
+            setInfo([...data]);
+          })
+          .catch((error) => {
+            setLoading(false);
+            setError(true);
+            console.log(error);
+          });
+      }
     }
   };
 
@@ -47,15 +52,16 @@ function App() {
           className='city-selector'
           onChange={(e) => {
             setCity(e.target.value);
-            //setError(false);
-            //setLoading(true);
+            setError(false);
           }}
         >
           <option id='default-city' value='' defaultValue=''>
             Select a city
           </option>
-          {CITIES.map((city) => (
-            <option value={city}>{city}</option>
+          {CITIES.map((city, index) => (
+            <option key={index} value={city}>
+              {city}
+            </option>
           ))}
         </select>
       </div>
@@ -148,10 +154,11 @@ const Categories = ({ changeCategory, category }) => {
   const CATEGORIES = ['PHARMACIES', 'COLLEGES', 'HOSPITALS', 'DOCTORS'];
   return (
     <div className='category-div'>
-      {CATEGORIES.map((cat) => (
+      {CATEGORIES.map((cat, i) => (
         <button
           className={cat === category ? 'active-tab' : 'inactive-tab'}
           value={cat}
+          key={i}
           onClick={(e) => {
             changeCategory(e);
           }}
@@ -164,10 +171,10 @@ const Categories = ({ changeCategory, category }) => {
 };
 
 const LoadingSpinner = () => {
-  //Other cool spinner types are-: 1. Bars, 2. Three dots, 3. TailSpin
+  //Other cool spinner types are-: 1. Bars, 2. Oval, 3. TailSpin
   return (
     <div className='loader-div'>
-      <Loader type='Oval' color='#1e58b0' height='100' width='100' />
+      <Loader type='ThreeDots' color='#1e58b0' height='100' width='100' />
     </div>
   );
 };
