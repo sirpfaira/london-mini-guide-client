@@ -1,69 +1,37 @@
 import './App.css';
 import React, { useState } from 'react';
 import Loader from 'react-loader-spinner';
-import StratfordData from './data/Stratford.json';
-import HeathrowData from './data/Heathrow.json';
-import HarrowData from './data/Harrow.json';
+//if the react app is not starting type in terminal "npm install react-loader-spinner --save"
 
 function App() {
   const [city, setCity] = useState('');
-  const [activeTab, setActiveTab] = useState({
-    pharmacies: true,
-    colleges: false,
-    hospitals: false,
-    doctors: false,
-  });
-  const [error, setError] = useState(false);
+  const [category, setCategory] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const CITIES = ['STRATFORD', 'HARROW', 'HEATHROW'];
+  const [info, setInfo] = useState([]);
 
   const changeCategory = (e) => {
     e.preventDefault();
     if (!city) {
       setError(true);
     } else {
+      setLoading(true);
       let clickedTab = e.target.value;
+      setCategory(clickedTab);
+      console.log(`${city}/${category}`);
 
-      switch (clickedTab) {
-        case 'pharmacies':
-          setActiveTab({
-            pharmacies: true,
-            colleges: false,
-            hospitals: false,
-            doctors: false,
-          });
-
-          break;
-
-        case 'colleges':
-          setActiveTab({
-            pharmacies: false,
-            colleges: true,
-            hospitals: false,
-            doctors: false,
-          });
-          break;
-
-        case 'hospitals':
-          setActiveTab({
-            pharmacies: false,
-            colleges: false,
-            hospitals: true,
-            doctors: false,
-          });
-          break;
-
-        case 'doctors':
-          setActiveTab({
-            pharmacies: false,
-            colleges: false,
-            hospitals: false,
-            doctors: true,
-          });
-          break;
-
-        default:
-          break;
-      }
+      fetch(`https://london-mini-guide.glitch.me/${city}/${category}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setLoading(false);
+          setInfo([...data]);
+        })
+        .catch((error) => {
+          setLoading(false);
+          setError(true);
+          console.log(error);
+        });
     }
   };
 
@@ -79,16 +47,16 @@ function App() {
           className='city-selector'
           onChange={(e) => {
             setCity(e.target.value);
-            setError(false);
-            setLoading(true);
+            //setError(false);
+            //setLoading(true);
           }}
         >
           <option id='default-city' value='' defaultValue=''>
             Select a city
           </option>
-          <option value='Harrow'>Harrow</option>
-          <option value='Stratford'>Stratford</option>
-          <option value='Heathrow'>Heathrow</option>
+          {CITIES.map((city) => (
+            <option value={city}>{city}</option>
+          ))}
         </select>
       </div>
       {error && (
@@ -103,99 +71,15 @@ function App() {
         </>
       )}
       <hr />
-      <div className='category-div'>
-        <button
-          className={activeTab.pharmacies ? 'active-tab' : 'inactive-tab'}
-          value='pharmacies'
-          onClick={(e) => {
-            changeCategory(e);
-          }}
-        >
-          Pharmacies
-        </button>
-        <button
-          className={activeTab.colleges ? 'active-tab' : 'inactive-tab'}
-          value='colleges'
-          onClick={(e) => {
-            changeCategory(e);
-          }}
-        >
-          Colleges
-        </button>
-        <button
-          className={activeTab.hospitals ? 'active-tab' : 'inactive-tab'}
-          value='hospitals'
-          onClick={(e) => {
-            changeCategory(e);
-          }}
-        >
-          Hospitals
-        </button>
-        <button
-          className={activeTab.doctors ? 'active-tab' : 'inactive-tab'}
-          value='doctors'
-          onClick={(e) => {
-            changeCategory(e);
-          }}
-        >
-          Doctors
-        </button>
-      </div>
+      <Categories changeCategory={changeCategory} category={category} />
       <hr />
-      {loading && city ? (
-        <LoadingSpinner />
-      ) : (
-        <Table activeTab={activeTab} city={city} />
-      )}
+      {loading && city ? <LoadingSpinner /> : <Table info={info} />}
     </div>
   );
 }
-const Table = ({ activeTab, city }) => {
-  console.log(activeTab);
-  console.log(city);
-  let data = [];
 
-  if (city === 'Stratford') {
-    if (activeTab.pharmacies) {
-      data = StratfordData.pharmacies;
-    }
-    if (activeTab.colleges) {
-      data = StratfordData.colleges;
-    }
-    if (activeTab.hospitals) {
-      data = StratfordData.hospitals;
-    }
-    if (activeTab.doctors) {
-      data = StratfordData.doctors;
-    }
-  } else if (city === 'Harrow') {
-    if (activeTab.pharmacies) {
-      data = HarrowData.pharmacies;
-    }
-    if (activeTab.colleges) {
-      data = HarrowData.colleges;
-    }
-    if (activeTab.hospitals) {
-      data = HarrowData.hospitals;
-    }
-    if (activeTab.doctors) {
-      data = HarrowData.doctors;
-    }
-  } else if (city === 'Heathrow') {
-    if (activeTab.pharmacies) {
-      data = HeathrowData.pharmacies;
-    }
-    if (activeTab.colleges) {
-      data = HeathrowData.colleges;
-    }
-    if (activeTab.hospitals) {
-      data = HeathrowData.hospitals;
-    }
-    if (activeTab.doctors) {
-      data = HeathrowData.doctors;
-    }
-  }
-
+const Table = ({ info }) => {
+  let data = [...info];
   return (
     <div>
       <table className='table'>
@@ -250,9 +134,7 @@ const Table = ({ activeTab, city }) => {
           ) : (
             <tr>
               <td colSpan='5'>
-                <h3 className='text-center'>
-                  Please choose a city and category first!
-                </h3>
+                <h3 className='text-center'>No data to show!</h3>
               </td>
             </tr>
           )}
@@ -262,12 +144,32 @@ const Table = ({ activeTab, city }) => {
   );
 };
 
-const LoadingSpinner = () => {
+const Categories = ({ changeCategory, category }) => {
+  const CATEGORIES = ['PHARMACIES', 'COLLEGES', 'HOSPITALS', 'DOCTORS'];
   return (
-    <div className='loader-div'>
-      <Loader type='Oval' color='#1e58b0' height='100' width='100' />
-      {/*Other cool spinner types are-: 1. Bars, 2. Three dots, 3. TailSpin*/}
+    <div className='category-div'>
+      {CATEGORIES.map((cat) => (
+        <button
+          className={cat === category ? 'active-tab' : 'inactive-tab'}
+          value={cat}
+          onClick={(e) => {
+            changeCategory(e);
+          }}
+        >
+          {cat}
+        </button>
+      ))}
     </div>
   );
 };
+
+const LoadingSpinner = () => {
+  //Other cool spinner types are-: 1. Bars, 2. Three dots, 3. TailSpin
+  return (
+    <div className='loader-div'>
+      <Loader type='Oval' color='#1e58b0' height='100' width='100' />
+    </div>
+  );
+};
+
 export default App;

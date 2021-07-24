@@ -22,7 +22,7 @@ In this level you should
   - The style of the button should also change to distinguish it from other buttons
 - Show an error if user tries to choose a category before choosing a city
 
-![show an error if user tries to choose a category before chosing a city](https://i.imgur.com/vVPsMUe.png)
+![show an error if user tries to choose a category before choosing a city](https://i.imgur.com/vVPsMUe.png)
 
 ## Client Level 300
 
