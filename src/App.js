@@ -60,7 +60,7 @@ function App() {
           </option>
           {CITIES.map((city, index) => (
             <option key={index} value={city}>
-              {city}
+              {pascalCase(city)}
             </option>
           ))}
         </select>
@@ -163,7 +163,7 @@ const Categories = ({ changeCategory, category }) => {
             changeCategory(e);
           }}
         >
-          {cat}
+          {pascalCase(cat)}
         </button>
       ))}
     </div>
@@ -177,6 +177,15 @@ const LoadingSpinner = () => {
       <Loader type='ThreeDots' color='#1e58b0' height='100' width='100' />
     </div>
   );
+};
+
+const pascalCase = (string) => {
+  return string
+    .split(' ')
+    .map((word) => {
+      return word.slice(0, 1).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(' ');
 };
 
 export default App;
